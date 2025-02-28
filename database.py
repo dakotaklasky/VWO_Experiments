@@ -13,8 +13,9 @@ def create_db():
         )''')
     
     cursor.execute('''CREATE TABLE IF NOT EXISTS Experiments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             website_id INTEGER,
-            experiment_id INTEGER PRIMARY KEY,          -- Experiment ID
+            experiment_id INTEGER,          -- Experiment ID
             name TEXT,                                  -- Experiment Name
             type TEXT,                                  -- Experiment Type
             status TEXT,                                -- Experiment Status
