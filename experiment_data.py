@@ -2,6 +2,9 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 import time
+import database
+
+database.create_db()
 
 # Set up options for headless browser (optional, removes the browser window)
 chrome_options = Options()
@@ -37,6 +40,8 @@ print(vwo_exp_data['144']['name']) #get name of experiment
 
 # Close the browser session
 driver.quit()
+
+
 
 
 
