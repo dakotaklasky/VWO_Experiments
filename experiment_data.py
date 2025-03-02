@@ -42,15 +42,7 @@ def insert_experiments(experiments_data, cursor, website_id):
         pc_traffic = experiment.get('pc_traffic', 0)
         comb_n = json.dumps(experiment.get('comb_n', {}))  # Convert nested dict to JSON string
         combs = json.dumps(experiment.get('combs', {}))    # Convert nested dict to JSON string
-        goal_id = experiment.get('goal_id', None)
-        goal_type = experiment.get('goal_type', None)
-        pUrl = experiment.get('pUrl', None)
-        excludeUrl = experiment.get('excludeUrl', None)
-        pExcludeUrl = experiment.get('pExcludeUrl', None)
-        js = json.dumps(experiment.get('js', {}))         # Convert nested dict to JSON string
         globalCode = json.dumps(experiment.get('globalCode', {}))  # Convert nested dict to JSON string
-        section_path = experiment.get('section_path', None)
-        variation_names = json.dumps(experiment.get('variation_names', {}))  # Convert nested dict to JSON string
         segment_code = experiment.get('segment_code', None)
         segment_eligble = experiment.get('segment_eligble', False)
         multiple_domains = experiment.get('multiple_domains', False)
@@ -58,10 +50,7 @@ def insert_experiments(experiments_data, cursor, website_id):
         exclude_url = experiment.get('exclude_url', None)
         exec_flag = experiment.get('exec', False)
         isEventMigrated = experiment.get('isEventMigrated', False)
-        isSpaRevertFeatureEnabled = experiment.get('isSpaRevertFeatureEnabled', False)
         manual = experiment.get('manual', False)
-        post_mutations_enabled = experiment.get('post_mutations_enabled', False)
-        pre_mutations = json.dumps(experiment.get('pre_mutations', {}))  # Convert nested dict to JSON string
         ready = experiment.get('ready', False)
         varSegAllowed = experiment.get('varSegAllowed', False)
         metrics = json.dumps(experiment.get('metrics', {}))  # Convert nested list to JSON string
@@ -69,29 +58,29 @@ def insert_experiments(experiments_data, cursor, website_id):
         ss = json.dumps(experiment.get('ss', {}))  # Convert nested dict to JSON string
         shouldHideElement = experiment.get('shouldHideElement', False)
         isTriggerValidated = experiment.get('isTriggerValidated', False)
-        custom_goal_flags = json.dumps(experiment.get('custom_goal_flags', {}))  # Convert nested dict to JSON string
-        segmentObj = json.dumps(experiment.get('segmentObj', {}))  # Convert nested dict to JSON string
-        segment = json.dumps(experiment.get('segment', {}))  # Convert nested dict to JSON string
+        metrics = json.dumps(experiment.get('metrics', ''))
+        pg_config = json.dumps(experiment.get('pg_config', ''))
+        triggers = json.dumps(experiment.get('triggers', ''))
+        mt = json.dumps(experiment.get('mt', ''))
+        muts = json.dumps(experiment.get('muts', ''))
+        sections = json.dumps(experiment.get('sections', ''))
         
         # Append the data tuple for this experiment
         experiment_values.append((
             website_id, experiment_id, name, type_, status, version, pc_traffic, comb_n, combs, 
-            goal_id, goal_type, pUrl, excludeUrl, pExcludeUrl, js, globalCode, section_path, 
-            variation_names, segment_code, segment_eligble, multiple_domains, clickmap, exclude_url, 
-            exec_flag, isEventMigrated, isSpaRevertFeatureEnabled, manual, post_mutations_enabled, 
-            pre_mutations, ready, varSegAllowed, metrics, ep, ss, shouldHideElement, 
-            isTriggerValidated, custom_goal_flags, segmentObj, segment
+            globalCode, segment_code, segment_eligble, multiple_domains, 
+            clickmap, exclude_url, exec_flag, isEventMigrated,  manual,ready, varSegAllowed, metrics,
+            ep, ss, shouldHideElement, isTriggerValidated, metrics, pg_config, triggers, 
+            mt, muts, sections
         ))
     
     # Insert all experiments at once into the database
     cursor.executemany('''INSERT INTO Experiments (
         website_id, experiment_id, name, type, status, version, pc_traffic, comb_n, combs, 
-        goal_id, goal_type, pUrl, excludeUrl, pExcludeUrl, js, globalCode, section_path, 
-        variation_names, segment_code, segment_eligble, multiple_domains, clickmap, exclude_url, 
-        exec, isEventMigrated, isSpaRevertFeatureEnabled, manual, post_mutations_enabled, 
-        pre_mutations, ready, varSegAllowed, metrics, ep, ss, shouldHideElement, 
-        isTriggerValidated, custom_goal_flags, segmentObj, segment
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', 
+        globalCode, segment_code, segment_eligble, multiple_domains, 
+        clickmap, exclude_url, exec, isEventMigrated, manual, ready, varSegAllowed, metrics, ep, ss, 
+        shouldHideElement, isTriggerValidated, metrics, pg_config, triggers, mt, muts, sections
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?)''', 
     experiment_values)
     
     # Commit the changes after insertion

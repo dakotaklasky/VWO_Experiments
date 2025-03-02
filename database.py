@@ -23,15 +23,7 @@ def create_db():
             pc_traffic INTEGER,                        -- Traffic Percentage
             comb_n TEXT,                                -- Combination Names (Control, Variation)
             combs TEXT,                                 -- Traffic Distribution (Combinations)
-            goal_id INTEGER,                            -- Goal ID
-            goal_type TEXT,                             -- Goal Type (REVENUE_TRACKING, CUSTOM_GOAL)
-            pUrl TEXT,                                  -- Goal URL Pattern
-            excludeUrl TEXT,                            -- Excluded Goal URL Pattern
-            pExcludeUrl TEXT,                           -- Pre-excluded Goal URL Pattern
-            js TEXT,                                    -- JavaScript Code for Variations/Redirection
             globalCode TEXT,                            -- Global Code (for the experiment)
-            section_path TEXT,                          -- Section Path for Experiment
-            variation_names TEXT,                      -- Variation Names in Sections
             segment_code TEXT,                          -- Segment Code Expression
             segment_eligble BOOLEAN,                    -- Segment Eligibility Flag (True/False)
             multiple_domains BOOLEAN,                   -- Multiple Domains Flag (True/False)
@@ -39,10 +31,7 @@ def create_db():
             exclude_url TEXT,                           -- URL to Exclude from Experiment
             exec BOOLEAN,                               -- Execution Flag (True/False)
             isEventMigrated BOOLEAN,                    -- Event Migration Flag (True/False)
-            isSpaRevertFeatureEnabled BOOLEAN,          -- SPA Revert Feature Flag (True/False)
             manual BOOLEAN,                             -- Manual Trigger Flag (True/False)
-            post_mutations_enabled BOOLEAN,             -- Post Mutations Enabled Flag (True/False)
-            pre_mutations TEXT,                         -- Pre Mutations Data
             ready BOOLEAN,                              -- Experiment Ready Flag (True/False)
             varSegAllowed BOOLEAN,                      -- Variable Segmentation Allowed (True/False)
             metrics TEXT,                               -- Metrics for Tracking
@@ -50,9 +39,11 @@ def create_db():
             ss TEXT,                                    -- Session Tracking (Optional)
             shouldHideElement BOOLEAN,                  -- Flag to Hide Element (True/False)
             isTriggerValidated BOOLEAN,                 -- Trigger Validation Flag (True/False)
-            custom_goal_flags TEXT,                     -- Custom Goal Flags (e.g., mca, revenueProp)
-            segmentObj TEXT,                            -- Segment Object (Optional)
-            segment TEXT,                                 -- Segment Data (Optional)
+            pg_config TEXT,                             -- List of Experiment Configurations (complex)
+            triggers TEXT,                              -- List of Triggers (complex structure)
+            mt TEXT,                                    -- mt Data (complex structure)
+            muts TEXT,                                  -- Post-mutation Data (complex structure)
+            sections TEXT,                              -- Sections (complex structure)
             FOREIGN KEY(website_id) REFERENCES Websites(website_id)
         )''')
     
