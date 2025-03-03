@@ -5,13 +5,13 @@ def create_db():
     conn = sqlite3.connect('experiments.db')
     cursor = conn.cursor()
 
-    # Create a table
-
+    # Create a Website table
     cursor.execute('''CREATE TABLE IF NOT EXISTS Websites (
             website_id INTEGER PRIMARY KEY,
             website TEXT
         )''')
     
+    #Create Experiments table
     cursor.execute('''CREATE TABLE IF NOT EXISTS Experiments (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             website_id INTEGER,
@@ -47,8 +47,6 @@ def create_db():
             FOREIGN KEY(website_id) REFERENCES Websites(website_id)
         )''')
     
-
-
     # Close the connection
     conn.commit()
     conn.close()
