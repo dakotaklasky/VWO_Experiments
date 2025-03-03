@@ -13,17 +13,14 @@ def create_db():
     
     #Create Experiments table
     cursor.execute('''CREATE TABLE IF NOT EXISTS Experiments (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            experiment_uid TEXT PRIMARY KEY,
             website_id INTEGER,
-            experiment_id INTEGER,          -- Experiment ID
+            vwo_id INTEGER,                             -- Experiment ID
             name TEXT,                                  -- Experiment Name
             type TEXT,                                  -- Experiment Type
             status TEXT,                                -- Experiment Status
             version INTEGER,                            -- Experiment Version
             pc_traffic INTEGER,                        -- Traffic Percentage
-            comb_n TEXT,                                -- Combination Names (Control, Variation)
-            combs TEXT,                                 -- Traffic Distribution (Combinations)
-            globalCode TEXT,                            -- Global Code (for the experiment)
             segment_code TEXT,                          -- Segment Code Expression
             segment_eligble BOOLEAN,                    -- Segment Eligibility Flag (True/False)
             multiple_domains BOOLEAN,                   -- Multiple Domains Flag (True/False)
@@ -34,18 +31,51 @@ def create_db():
             manual BOOLEAN,                             -- Manual Trigger Flag (True/False)
             ready BOOLEAN,                              -- Experiment Ready Flag (True/False)
             varSegAllowed BOOLEAN,                      -- Variable Segmentation Allowed (True/False)
-            metrics TEXT,                               -- Metrics for Tracking
             ep INTEGER,                                 -- Epoch Time (Experiment Start Time)
-            ss TEXT,                                    -- Session Tracking (Optional)
             shouldHideElement BOOLEAN,                  -- Flag to Hide Element (True/False)
             isTriggerValidated BOOLEAN,                 -- Trigger Validation Flag (True/False)
             pg_config TEXT,                             -- List of Experiment Configurations (complex)
             triggers TEXT,                              -- List of Triggers (complex structure)
-            mt TEXT,                                    -- mt Data (complex structure)
-            muts TEXT,                                  -- Post-mutation Data (complex structure)
-            sections TEXT,                              -- Sections (complex structure)
             FOREIGN KEY(website_id) REFERENCES Websites(website_id)
         )''')
+    
+    #Experiment Combinations Table (Stores 'comb_n' and 'combs' Dict)
+    cursor.execute('''CREATE TABLE IF NOT EXISTS ExperimentCombinations (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        experiment_uid TEXT,
+        combination_key TEXT,
+        combination_value TEXT,
+        traffic INTEGER,
+        FOREIGN KEY(experiment_uid) REFERENCES Experiments(experiment_uid)
+    )''')
+
+    #Experiment Global Code Table
+    cursor.execute('''CREATE TABLE IF NOT EXISTS ExperimentGlobalCode (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        experiment_uid TEXT,
+        code_type TEXT, -- 'pre' or 'post'
+        code TEXT,
+        FOREIGN KEY(experiment_uid) REFERENCES Experiments(experiment_uid)
+    )''')
+
+    #Experiment Metrics Table
+    cursor.execute('''CREATE TABLE IF NOT EXISTS ExperimentMetrics (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        experiment_uid TEXT,
+        metric_id INTEGER,
+        metric_type TEXT, -- 'm' for main metric, 'g' for goal metric
+        FOREIGN KEY(experiment_uid) REFERENCES Experiments(experiment_uid)
+    )''')
+
+    #Experiment Mutations Table
+    cursor.execute('''CREATE TABLE IF NOT EXISTS ExperimentMutations (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        experiment_uid TEXT,
+        mutation_type TEXT, -- 'post' mutation settings
+        enabled BOOLEAN,
+        refresh BOOLEAN,
+        FOREIGN KEY(experiment_uid) REFERENCES Experiments(experiment_uid)
+    )''')
     
     # Close the connection
     conn.commit()

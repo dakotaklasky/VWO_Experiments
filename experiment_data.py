@@ -26,69 +26,108 @@ def get_exp_data(website):
     return vwo_exp_data
 
 def insert_experiments(experiments_data, cursor, website_id):
-    #need to call for each website
-    # inserts for all the experiments for a particular website
-    if experiments_data is not None:
-        experiment_values = []
-        
-        for experiment_id, experiment in experiments_data.items():
+    """Insert all experiments and their related structured data at once."""
+    if not experiments_data:
+        return  # Exit if no data
 
-            cursor.execute("SELECT 1 FROM Experiments WHERE website_id = ? AND experiment_id = ?", 
-                           (website_id, experiment_id))
-            if cursor.fetchone():  # If a record exists, skip inserting
-                continue
+    experiment_values = []
+    combination_values = []
+    global_code_values = []
+    metric_values = []
+    mutation_values = []
 
-            # Flatten the experiment data and provide defaults if necessary
-            name = experiment.get('name', 'Unnamed Experiment')
-            type_ = experiment.get('type', 'UNKNOWN')
-            status = experiment.get('status', 'UNKNOWN')
-            version = experiment.get('version', 1)
-            pc_traffic = experiment.get('pc_traffic', 0)
-            comb_n = json.dumps(experiment.get('comb_n', {}))  # Convert nested dict to JSON string
-            combs = json.dumps(experiment.get('combs', {}))    # Convert nested dict to JSON string
-            globalCode = json.dumps(experiment.get('globalCode', {}))  # Convert nested dict to JSON string
-            segment_code = experiment.get('segment_code', None)
-            segment_eligble = experiment.get('segment_eligble', False)
-            multiple_domains = experiment.get('multiple_domains', False)
-            clickmap = experiment.get('clickmap', 0)
-            exclude_url = experiment.get('exclude_url', None)
-            exec_flag = experiment.get('exec', False)
-            isEventMigrated = experiment.get('isEventMigrated', False)
-            manual = experiment.get('manual', False)
-            ready = experiment.get('ready', False)
-            varSegAllowed = experiment.get('varSegAllowed', False)
-            metrics = json.dumps(experiment.get('metrics', {}))  # Convert nested list to JSON string
-            ep = experiment.get('ep', None)
-            ss = json.dumps(experiment.get('ss', {}))  # Convert nested dict to JSON string
-            shouldHideElement = experiment.get('shouldHideElement', False)
-            isTriggerValidated = experiment.get('isTriggerValidated', False)
-            metrics = json.dumps(experiment.get('metrics', ''))
-            pg_config = json.dumps(experiment.get('pg_config', ''))
-            triggers = json.dumps(experiment.get('triggers', ''))
-            mt = json.dumps(experiment.get('mt', ''))
-            muts = json.dumps(experiment.get('muts', ''))
-            sections = json.dumps(experiment.get('sections', ''))
-            
-            # Append the data tuple for this experiment
-            experiment_values.append((
-                website_id, experiment_id, name, type_, status, version, pc_traffic, comb_n, combs, 
-                globalCode, segment_code, segment_eligble, multiple_domains, 
-                clickmap, exclude_url, exec_flag, isEventMigrated,  manual,ready, varSegAllowed, metrics,
-                ep, ss, shouldHideElement, isTriggerValidated, metrics, pg_config, triggers, 
-                mt, muts, sections
-            ))
-    
-        # Insert all experiments at once into the database
-        cursor.executemany('''INSERT INTO Experiments (
-            website_id, experiment_id, name, type, status, version, pc_traffic, comb_n, combs, 
-            globalCode, segment_code, segment_eligble, multiple_domains, 
-            clickmap, exclude_url, exec, isEventMigrated, manual, ready, varSegAllowed, metrics, ep, ss, 
-            shouldHideElement, isTriggerValidated, metrics, pg_config, triggers, mt, muts, sections
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?)''', 
-        experiment_values)
-        
-        # Commit the changes after insertion
-        cursor.connection.commit()
+    for vwo_id, experiment in experiments_data.items():
+
+        experiment_uid = f"{website_id}_{vwo_id}"
+
+        # Check if experiment already exists
+        cursor.execute("SELECT 1 FROM Experiments WHERE experiment_uid = ? ", (experiment_uid,))
+        if cursor.fetchone():
+            continue
+
+        # Flatten core experiment data
+        experiment_values.append((
+            experiment_uid,
+            website_id,
+            vwo_id,
+            experiment.get('name', 'Unnamed Experiment'),
+            experiment.get('type', 'UNKNOWN'),
+            experiment.get('status', 'UNKNOWN'),
+            experiment.get('version', 1),
+            experiment.get('pc_traffic', 0),
+            experiment.get('segment_code', None),
+            experiment.get('segment_eligble', False),
+            experiment.get('multiple_domains', False),
+            experiment.get('clickmap', 0),
+            experiment.get('exclude_url', None),
+            experiment.get('exec', False),
+            experiment.get('isEventMigrated', False),
+            experiment.get('manual', False),
+            experiment.get('ready', False),
+            experiment.get('varSegAllowed', False),
+            experiment.get('ep', None),
+            experiment.get('shouldHideElement', False),
+            experiment.get('isTriggerValidated', False),
+            json.dumps(experiment.get('pg_config', '')),  
+            json.dumps(experiment.get('triggers', ''))  
+        ))
+
+
+        # Handle combinations (comb_n and combs)
+        comb_n = experiment.get('comb_n', {})
+        combs = experiment.get('combs', {})
+        for key, value in comb_n.items():
+            combination_values.append((experiment_uid, key, value, combs.get(key, 0)))
+
+        # Handle global code
+        global_code = experiment.get('globalCode', {})
+        if isinstance(global_code, dict):  # If it's a dict, process normally
+            for code_type, code in global_code.items():
+                global_code_values.append((experiment_uid, code_type, code))
+        elif isinstance(global_code, list):  # If it's a list, store as list items
+            for i, code in enumerate(global_code):
+                global_code_values.append((experiment_uid, f'list_{i}', code))
+
+        # Handle metrics
+        metrics = experiment.get('metrics', [])
+        for metric in metrics:
+            metric_values.append((experiment_uid, metric.get('metricId', 0), metric.get('type', 'UNKNOWN')))
+
+        # Handle mutations
+        muts = experiment.get('muts', {}).get('post', {})
+        mutation_values.append((experiment_uid, 'post', muts.get('enabled', False), muts.get('refresh', False)))
+
+    # Insert into Experiments table
+    cursor.executemany('''INSERT INTO Experiments (
+    experiment_uid, website_id, vwo_id, name, type, status, version, pc_traffic,
+    segment_code, segment_eligble, multiple_domains, 
+    clickmap, exclude_url, exec, isEventMigrated, manual, ready, varSegAllowed, ep, 
+    shouldHideElement, isTriggerValidated, pg_config, triggers
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', 
+    experiment_values)
+
+    # Insert into ExperimentCombinations table
+    if combination_values:
+        cursor.executemany('''INSERT INTO ExperimentCombinations (experiment_uid, combination_key, combination_value, traffic)
+        VALUES (?, ?, ?, ?)''', combination_values)
+
+    # Insert into ExperimentGlobalCode table
+    if global_code_values:
+        cursor.executemany('''INSERT INTO ExperimentGlobalCode (experiment_uid, code_type, code)
+        VALUES (?, ?, ?)''', global_code_values)
+
+    # Insert into ExperimentMetrics table
+    if metric_values:
+        cursor.executemany('''INSERT INTO ExperimentMetrics (experiment_uid, metric_id, metric_type)
+        VALUES (?, ?, ?)''', metric_values)
+
+    # Insert into ExperimentMutations table
+    if mutation_values:
+        cursor.executemany('''INSERT INTO ExperimentMutations (experiment_uid, mutation_type, enabled, refresh)
+        VALUES (?, ?, ?, ?)''', mutation_values)
+
+    # Commit changes after all insertions
+    cursor.connection.commit()
 
 
 
