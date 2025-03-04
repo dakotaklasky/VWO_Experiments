@@ -5,28 +5,25 @@ import time
 import json
 
 def get_exp_data(website):
+    """Extract vwo data by executing Javascript via Selenium"""
 
     #Connect to chromedriver
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service)
 
-    # Open the website
+    # Open the website and wait to load
     driver.get(website)
-
-    # Wait for the page to load completely
     time.sleep(5)  
 
     # Extract window._vwo_exp data by executing JavaScript
     vwo_exp_data = driver.execute_script("return window._vwo_exp;")
 
-    # Close the browser session
     driver.quit()
-
-    # Return the extracted experiment data
     return vwo_exp_data
 
 def insert_experiments(experiments_data, cursor, website_id):
     """Insert all experiments and their related structured data at once."""
+    
     if not experiments_data:
         return  # Exit if no data
 
@@ -127,7 +124,6 @@ def insert_experiments(experiments_data, cursor, website_id):
         cursor.executemany('''INSERT INTO ExperimentMutations (experiment_uid, mutation_type, enabled, refresh)
         VALUES (?, ?, ?, ?)''', mutation_values)
 
-    # Commit changes after all insertions
     cursor.connection.commit()
 
 

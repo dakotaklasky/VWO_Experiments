@@ -1,7 +1,8 @@
 import sqlite3
 
 def create_db():
-    # Connect to the database (or create it)
+    """Create sqlite database tables"""
+
     conn = sqlite3.connect('experiments.db')
     cursor = conn.cursor()
 
@@ -78,6 +79,5 @@ def create_db():
         FOREIGN KEY(experiment_uid) REFERENCES Experiments(experiment_uid)
     )''')
     
-    # Close the connection
     conn.commit()
     conn.close()
