@@ -69,7 +69,8 @@ def insert_experiments(experiments_data, cursor, website_id):
             experiment.get('shouldHideElement', False),
             experiment.get('isTriggerValidated', False),
             json.dumps(experiment.get('pg_config', '')),  
-            json.dumps(experiment.get('triggers', ''))  
+            json.dumps(experiment.get('triggers', '')),
+            experiment.get('urlRegex',None)  
         ))
 
 
@@ -102,8 +103,8 @@ def insert_experiments(experiments_data, cursor, website_id):
     experiment_uid, website_id, vwo_id, name, type, status, version, pc_traffic,
     segment_code, segment_eligble, multiple_domains, 
     clickmap, exclude_url, exec, isEventMigrated, manual, ready, varSegAllowed, ep, 
-    shouldHideElement, isTriggerValidated, pg_config, triggers
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', 
+    shouldHideElement, isTriggerValidated, pg_config, triggers, urlRegex
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', 
     experiment_values)
 
     # Insert into ExperimentCombinations table

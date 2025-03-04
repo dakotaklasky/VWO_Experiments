@@ -36,6 +36,7 @@ def create_db():
             isTriggerValidated BOOLEAN,                 -- Trigger Validation Flag (True/False)
             pg_config TEXT,                             -- List of Experiment Configurations (complex)
             triggers TEXT,                              -- List of Triggers (complex structure)
+            urlRegex TEXT,                     -- Regex pattern to define which URL experimet applied to
             FOREIGN KEY(website_id) REFERENCES Websites(website_id)
         )''')
     
