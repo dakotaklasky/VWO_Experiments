@@ -70,7 +70,6 @@ def insert_experiments(experiments_data, cursor, website_id):
             experiment.get('urlRegex',None)  
         ))
 
-
         # Handle combinations (comb_n and combs)
         comb_n = experiment.get('comb_n', {})
         combs = experiment.get('combs', {})

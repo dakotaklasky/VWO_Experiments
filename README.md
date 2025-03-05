@@ -1,0 +1,1 @@
+This project extracts VWO experiment data from a list of websites and saves the data into sqlite database tables.
